@@ -1,0 +1,22 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# vs code settings
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# byte code
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# weights_dir
+weights/
+
+# output_dir
+output/
