@@ -113,10 +113,20 @@ def download_shape_predictor_weights(
     
     return output_path
 
-def load_base_generator(path: Path | str) -> nn.Module:
+def load_base_generator(
+    resolution: Literal[256, 512, 1024] = 256,
+    weights_dir: Path | str = 'weights',
+    device: torch.device | Literal['cuda', 'cpu'] | str = 'cuda'
+) -> nn.Module:
+    device = torch.device(device)
+    
+    path = download_stylegan_weights(resolution, weights_dir)
+    
     with open(path, 'rb') as f:
         network_dict = legacy.load_network_pkl(f)
-        return network_dict['G_ema']
+        generator = network_dict['G_ema'].eval().to(device)
+    
+    return generator
 
 def save_style_weights(
     generator: nn.Module,
@@ -158,13 +168,12 @@ def load_style_weights(
 def load_styled_generator(
     style_weights_path: Path | str,
     resolution: Literal[256, 512, 1024] = 256,
-    base_weights_dir: Path | str = 'weights',
+    weights_dir: Path | str = 'weights',
     device: torch.device | Literal['cuda', 'cpu'] | str = 'cuda'
 ) -> nn.Module:
     device = torch.device(device)
     
-    base_weights_path = download_stylegan_weights(resolution, base_weights_dir)
-    generator = load_base_generator(base_weights_path).to(device)
+    generator = load_base_generator(resolution, weights_dir, device)
     generator = load_style_weights(generator, style_weights_path)
     generator.eval()
     

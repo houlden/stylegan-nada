@@ -1,8 +1,6 @@
 import torch
-# import torch.nn as nn
 from torchvision.transforms import transforms
 from pathlib import Path
-# from PIL import Image
 
 from src.models.E4EInvertor import E4EInvertor
 from src.utils.alignment import FFHQFaceAligner

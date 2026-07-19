@@ -7,7 +7,7 @@ from tqdm import trange, tqdm
 
 from src.models.StyleGANNADA import StyleGANNADA
 from src.losses import DirectionalCLIPLoss
-from src.utils.weights import download_stylegan_weights, load_base_generator, save_style_weights
+from src.utils.weights import load_base_generator, save_style_weights
 from src.utils.fix_random import seed_everything
 from src.utils.validation import validate
 from src.utils.clip_utils import load_and_freeze_clip
@@ -16,26 +16,24 @@ from src.utils.training_utils import warmup_generator, format_log_message, save_
 
 
 def train(
+    # Basic
     source_text: str = 'a photo of a person',
     target_text: str = 'a sketch of a person',
     experiment_name: str = 'sketch',
+    resolution: Literal[256, 512, 1024] = 256,
+    device: torch.device | Literal['cuda', 'cpu'] | str = 'cuda',
+    seed: int | None = None,
+    # Hyperparameters NADA
     num_steps: int = 300,
     batch_size: int = 4,
     lr: float = 0.002,
-    resolution: Literal[256, 512, 1024] = 256,
+    truncation_psi: float = 0.7,
+    # CLIP model
     clip_model_name: Literal[
         'RN50', 'RN101', 'RN50x4', 'RN50x16', 'RN50x64',
         'ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px'
     ] = 'ViT-B/32',
-    truncation_psi: float = 0.7,
-    weights_dir: Path | str = 'weights',
-    output_dir: Path | str = 'output',
-    device: torch.device | Literal['cuda', 'cpu'] | str = 'cuda',
-    verbose: Literal[0, 1, 2] = 2,
-    loging_every_n: int = 10,
-    save_weights_every_n: int | None = 50,
-    validate_every_n: int | None = 50,
-    val_set_path: Path | str | None = 'data/fixed_val_set.pt',
+    # Blocks selection parameters
     blocks_selection_mode: Literal['static', 'once', 'adaptive'] = 'static',
     blocks_to_freeze: Collection[str] = ('b4', 'b8', 'b16', 'b32'),
     k_trainable_blocks: int = 3,
@@ -45,7 +43,14 @@ def train(
     select_criterion: Literal['absolute', 'relative'] = 'absolute',
     select_norm: Literal['l1', 'l2'] = 'l2',
     adaptive_selection_every_n: int = 50,
-    seed: int | None = None
+    # Logging, validation, checkpoints
+    weights_dir: Path | str = 'weights',
+    output_dir: Path | str = 'output',
+    loging_every_n: int = 10,
+    save_weights_every_n: int | None = 50,
+    validate_every_n: int | None = 50,
+    val_set_path: Path | str | None = 'data/fixed_val_set.pt',
+    verbose: Literal[0, 1, 2] = 2
 ) -> None:
     config_snapshot = locals().copy()
     
@@ -60,8 +65,7 @@ def train(
     
     save_experiment_config(config_snapshot, experiment_dir / 'config.json')
     
-    weights_path = download_stylegan_weights(resolution, weights_dir)
-    generator = load_base_generator(weights_path)
+    generator = load_base_generator(resolution, weights_dir, device)
     
     clip_model, _ = load_and_freeze_clip(clip_model_name, device)
     
@@ -173,23 +177,21 @@ def train(
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="StyleGAN-NADA Training Script")
     
+    # Basic
     parser.add_argument('--source_text', type=str, default='a photo of a person')
     parser.add_argument('--target_text', type=str, default='a sketch of a person')
     parser.add_argument('--experiment_name', type=str, default='sketch')
+    parser.add_argument('--resolution', type=int, default=256)
+    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--seed', type=int, default=101)
+    # Hyperparameters NADA
     parser.add_argument('--num_steps', type=int, default=300)
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--lr', type=float, default=0.002)
-    parser.add_argument('--resolution', type=int, default=256)
-    parser.add_argument('--clip_model_name', type=str, default='ViT-B/32')
     parser.add_argument('--truncation_psi', type=float, default=0.7)
-    parser.add_argument('--weights_dir', type=str, default='weights')
-    parser.add_argument('--output_dir', type=str, default='output')
-    parser.add_argument('--device', type=str, default='cuda')
-    parser.add_argument('--verbose', type=int, default=2)
-    parser.add_argument('--loging_every_n', type=int, default=10)
-    parser.add_argument('--save_weights_every_n', type=int, default=50)
-    parser.add_argument('--validate_every_n', type=int, default=50)
-    parser.add_argument('--val_set_path', type=str, default='data/fixed_val_set.pt')
+    # CLIP model
+    parser.add_argument('--clip_model_name', type=str, default='ViT-B/32')
+    # Blocks selection parameters
     parser.add_argument('--blocks_selection_mode', type=str, default='static')
     parser.add_argument('--blocks_to_freeze', type=str, nargs='+', default=['b4', 'b8', 'b16', 'b32'])
     parser.add_argument('--k_trainable_blocks', type=int, default=3)
@@ -199,7 +201,14 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('--select_criterion', type=str, default='absolute')
     parser.add_argument('--select_norm', type=str, default='l2')
     parser.add_argument('--adaptive_selection_every_n', type=int, default=50)
-    parser.add_argument('--seed', type=int, default=101)
+    # Logging, validation, checkpoints
+    parser.add_argument('--weights_dir', type=str, default='weights')
+    parser.add_argument('--output_dir', type=str, default='output')
+    parser.add_argument('--loging_every_n', type=int, default=10)
+    parser.add_argument('--save_weights_every_n', type=int, default=50)
+    parser.add_argument('--validate_every_n', type=int, default=50)
+    parser.add_argument('--val_set_path', type=str, default='data/fixed_val_set.pt')
+    parser.add_argument('--verbose', type=int, default=2)
     
     return parser.parse_args()
 

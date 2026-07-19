@@ -1,5 +1,5 @@
 import dlib
-import PIL.Image
+from PIL import Image
 from pathlib import Path
 
 from src.utils.weights import download_shape_predictor_weights
@@ -12,7 +12,7 @@ class FFHQFaceAligner:
         predictor_weights = download_shape_predictor_weights(weights_dir=weights_dir)
         self.predictor = dlib.shape_predictor(str(predictor_weights))
     
-    def __call__(self, image_path: Path | str) -> PIL.Image.Image:
+    def __call__(self, image_path: Path | str) -> Image.Image:
         image_path = Path(image_path)
         
         assert image_path.exists(), f'Image not found: {image_path}'
