@@ -3,8 +3,8 @@ import torch.nn as nn
 from tqdm import trange
 from typing import Literal
 
-from src.models.StyleGANNADA import StyleGANNADA
-from src.losses import GlobalCLIPLoss
+from src.models.stylegan_nada import StyleGANNADA
+from src.losses.clip_losses import GlobalCLIPLoss
 
 def select_frozen_blocks(
     model: StyleGANNADA,
@@ -28,7 +28,7 @@ def select_frozen_blocks(
     with torch.no_grad():
         w_base = model.G_target.mapping(z, c=None, truncation_psi=truncation_psi)
     
-    w_opt = nn.Parameter(w_base.clone())
+    w_opt = w_base.clone().requires_grad_(True)
     
     optimizer = torch.optim.Adam([w_opt], lr=lr)
     criterion = GlobalCLIPLoss(device=device, clip_model=clip_model)

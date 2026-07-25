@@ -5,8 +5,8 @@ from typing import Literal
 from collections.abc import Collection
 from tqdm import trange, tqdm
 
-from src.models.StyleGANNADA import StyleGANNADA
-from src.losses import DirectionalCLIPLoss
+from src.models.stylegan_nada import StyleGANNADA
+from src.losses.clip_losses import DirectionalCLIPLoss
 from src.utils.weights import load_base_generator, save_style_weights
 from src.utils.fix_random import seed_everything
 from src.utils.validation import validate
@@ -45,7 +45,7 @@ def train(
     adaptive_selection_every_n: int = 50,
     # Logging, validation, checkpoints
     weights_dir: Path | str = 'weights',
-    output_dir: Path | str = 'output',
+    output_dir: Path | str = 'output/styles',
     loging_every_n: int = 10,
     save_weights_every_n: int | None = 50,
     validate_every_n: int | None = 50,
@@ -57,7 +57,7 @@ def train(
     device = torch.device(device)
     
     weights_dir = Path(weights_dir)
-    experiment_dir = Path(output_dir) / experiment_name
+    experiment_dir = Path(output_dir) / f'{experiment_name}'
     experiment_dir.mkdir(parents=True, exist_ok=True)
     images_dir = experiment_dir / 'images'
     style_weights_dir = experiment_dir / 'weights'
@@ -93,7 +93,6 @@ def train(
     if blocks_selection_mode != 'adaptive':
         model.setup_target_layers(blocks_to_freeze)
         
-    
     trainable_params = [p for p in model.G_target.synthesis.parameters() if p.requires_grad]
     optimizer = torch.optim.Adam(params=trainable_params, lr=lr, betas=(0.0, 0.99))
     
@@ -150,7 +149,7 @@ def train(
 
         if verbose and (step % loging_every_n == 0 or step == 1):
             message = format_log_message(
-                verbose, step, num_steps, num_steps_len, loss,
+                verbose, step, num_steps, num_steps_len, loss.item(),
                 blocks_selection_mode, blocks_to_freeze
             )
             
@@ -203,7 +202,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('--adaptive_selection_every_n', type=int, default=50)
     # Logging, validation, checkpoints
     parser.add_argument('--weights_dir', type=str, default='weights')
-    parser.add_argument('--output_dir', type=str, default='output')
+    parser.add_argument('--output_dir', type=str, default='output/styles')
     parser.add_argument('--loging_every_n', type=int, default=10)
     parser.add_argument('--save_weights_every_n', type=int, default=50)
     parser.add_argument('--validate_every_n', type=int, default=50)

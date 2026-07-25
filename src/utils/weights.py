@@ -20,6 +20,9 @@ FFHQ_E4E_ID = '1cUv_reLE6k3604or78EranS7XzuVMWeO'
 # Shape Predictor weights archive link
 SHAPE_PREDICTOR_URL = 'http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2'
 
+# IR-SE50 weights ID
+IR_SE50_ID = '1KW7bjndL3QG3sxBbZxreGHigcCCpsDgn'
+
 resolution_dict = {
     256: FFHQ_256_URL,
     512: FFHQ_512_URL,
@@ -112,6 +115,25 @@ def download_shape_predictor_weights(
     print(f'Shape Predictor weights are unpacked to: {output_path}.')
     
     return output_path
+
+def download_irse50_weights(
+    gdown_id: str = IR_SE50_ID,
+    weights_dir: Path | str = 'weights',
+    filename: str = 'model_ir_se50.pth'
+) -> Path:
+    weights_dir = Path(weights_dir)
+    weights_dir.mkdir(parents=True, exist_ok=True)
+    
+    local_path = weights_dir / filename
+    
+    if not local_path.exists():
+        print('Loading IR_SE50 weights to a local drive...')
+        gdown.download(id=gdown_id, output=str(local_path))
+        print(f'IR_SE50 weights are uploaded to: {local_path}.')
+    else:
+        print(f'IR_SE50 weights are uploaded to: {local_path}.')
+    
+    return local_path
 
 def load_base_generator(
     resolution: Literal[256, 512, 1024] = 256,

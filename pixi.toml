@@ -39,6 +39,7 @@ tqdm = "*"
 pyspng = "*"
 imageio-ffmpeg = "==0.4.3"
 clip = { git = "https://github.com/openai/CLIP.git" }
+lpips = ">=0.1.4, <0.2"
 
 [feature.dev-tools.dependencies]
 ipykernel = "*"
@@ -51,4 +52,4 @@ train = "python src/train.py"
 
 [activation.env]
 PYTHONHASHSEED = "101"
-PYTHONPATH = ".:third_party/stylegan2:third_party/e4e"
+PYTHONPATH = "$PIXI_PROJECT_ROOT:$PIXI_PROJECT_ROOT/third_party/stylegan2:$PIXI_PROJECT_ROOT/third_party/e4e"

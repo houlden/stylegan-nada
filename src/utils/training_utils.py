@@ -32,14 +32,14 @@ def format_log_message(
     step: int,
     num_steps: int,
     num_steps_len: int,
-    loss: torch.Tensor,
+    loss: float,
     blocks_selection_mode: Literal['static', 'once', 'adaptive'],
     blocks_to_freeze: Collection[str],
     sep: str = ' | '
 ) -> str:
     message = (
         f'Step [{step:0{num_steps_len}d}/{num_steps}]{sep}'
-        f'CLIP Directional Loss: {loss.item():.4f}{sep}'
+        f'CLIP Directional Loss: {loss:.4f}{sep}'
     )
     
     if (blocks_selection_mode == 'adaptive') and (verbose > 1):
