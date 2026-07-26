@@ -20,7 +20,7 @@ def save_experiment_config(config_dict: dict[str, Any], save_path: Path | str) -
     with open(save_path, 'w', encoding='utf-8') as f:
         json.dump(clean_config, f, indent=4, ensure_ascii=False)
 
-@torch.no_grad()
+@torch.inference_mode()
 def warmup_generator(generator: nn.Module) -> None:
     device = next(generator.parameters()).device
     

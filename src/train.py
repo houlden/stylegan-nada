@@ -71,6 +71,8 @@ def train(
     
     model = StyleGANNADA(generator, device=device, frozen_blocks=())
     
+    warmup_generator(model.G_source)
+    
     if blocks_selection_mode == 'once':
         blocks_to_freeze = select_frozen_blocks(
             model=model,
@@ -111,8 +113,6 @@ def train(
     
     if need_validation:
         z_val = torch.load(val_set_path, map_location=device)
-    
-    warmup_generator(model.G_source)
     
     num_steps_len = len(str(num_steps))
     for step in trange(1, num_steps + 1, desc='Training'):
@@ -165,6 +165,9 @@ def train(
                 save_requires_grad_True_only=(blocks_selection_mode != 'adaptive'),
                 verbose=0
             )
+    
+    if need_validation and not (step % validate_every_n == 0 or step == 1):
+        validate(model, z_val, step, images_dir, truncation_psi=truncation_psi)
     
     save_style_weights(
         generator=model.G_target,
