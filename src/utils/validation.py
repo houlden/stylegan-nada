@@ -38,7 +38,8 @@ def validate(
     
     model.G_target.eval()
     
-    img_source, img_target = model(z_val, truncation_psi=truncation_psi)
+    img_source = model.G_source(z_val, c=None, truncation_psi=truncation_psi, noise_mode='const')
+    img_target = model.G_target(z_val, c=None, truncation_psi=truncation_psi, noise_mode='const')
     
     num_samples = z_val.shape[0]
     nrow = math.ceil(num_samples ** 0.5)
