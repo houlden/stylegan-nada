@@ -153,13 +153,13 @@ def load_base_generator(
 def save_style_weights(
     generator: nn.Module,
     save_path: Path | str,
-    save_requires_grad_True_only: bool = False,
+    save_changed_only: bool = False,
     verbose: Literal[0, 1] = 1
 ) -> None:
     save_path = Path(save_path)
     save_path.parent.mkdir(parents=True, exist_ok=True)
     
-    if save_requires_grad_True_only:
+    if save_changed_only:
         style_state_dict = {
             name: param.detach().cpu()
             for name, param in generator.synthesis.named_parameters()

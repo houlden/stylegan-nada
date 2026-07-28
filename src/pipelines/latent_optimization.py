@@ -30,7 +30,7 @@ class LatentOptimizationPipeline:
         lambda_id: float = 0.5,
         lambda_reg: float = 0.01,
         save_every_n: int | None = 50,
-        loging_every_n: int = 10,
+        logging_every_n: int = 10,
         verbose: Literal[0, 1] = 1
     ) -> None:
         self.device = torch.device(device)
@@ -47,7 +47,7 @@ class LatentOptimizationPipeline:
         self.lambda_reg = lambda_reg
         
         self.save_every_n = save_every_n
-        self.loging_every_n = loging_every_n
+        self.logging_every_n = logging_every_n
         self.verbose = verbose
         
         self.generator = load_base_generator(resolution, weights_dir, device)
@@ -152,7 +152,7 @@ class LatentOptimizationPipeline:
             optimizer.step()
             scheduler.step()
             
-            if self.verbose and (step % self.loging_every_n == 0 or step == 1):
+            if self.verbose and (step % self.logging_every_n == 0 or step == 1):
                 message = self._format_log_message(
                     step, steps, steps_len, total_loss.item(), l1_loss.item(),
                     l2_loss.item(), lpips_loss.item(), id_loss.item(), reg_loss.item()
