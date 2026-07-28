@@ -7,7 +7,7 @@ from tqdm import trange, tqdm
 
 from src.models.stylegan_nada import StyleGANNADA
 from src.losses.clip_losses import DirectionalCLIPLoss
-from src.utils.weights import load_base_generator, save_style_weights
+from src.utils.weights import load_base_generator, save_style_weights, load_styled_generator
 from src.utils.fix_random import seed_everything
 from src.utils.validation import validate
 from src.utils.clip_utils import load_and_freeze_clip
@@ -46,7 +46,9 @@ def train(
     # Logging, validation, checkpoints
     weights_dir: Path | str = 'weights',
     output_dir: Path | str = 'output/styles',
-    loging_every_n: int = 10,
+    init_generator_weights_path: Path | str | None = None,
+    save_changed_only: bool = True,
+    logging_every_n: int = 10,
     save_weights_every_n: int | None = 50,
     validate_every_n: int | None = 50,
     val_set_path: Path | str | None = 'data/fixed_val_set.pt',
@@ -62,10 +64,21 @@ def train(
     images_dir = experiment_dir / 'images'
     style_weights_dir = experiment_dir / 'weights'
     val_set_path = Path(val_set_path) if val_set_path is not None else None
+    should_save_changed_only = (
+        save_changed_only
+        and blocks_selection_mode != 'adaptive'
+        and init_generator_weights_path is None
+    )
     
     save_experiment_config(config_snapshot, experiment_dir / 'config.json')
     
-    generator = load_base_generator(resolution, weights_dir, device)
+    if init_generator_weights_path is not None:
+        init_generator_weights_path = Path(init_generator_weights_path)
+        generator = load_styled_generator(
+            init_generator_weights_path, resolution, weights_dir, device
+        )
+    else:
+        generator = load_base_generator(resolution, weights_dir, device)
     
     clip_model, _ = load_and_freeze_clip(clip_model_name, device)
     
@@ -90,7 +103,7 @@ def train(
         )
         
         if verbose > 1:
-                print(f'Frozen blocks: {", ".join(blocks_to_freeze)}')
+            print(f'Frozen blocks: {", ".join(blocks_to_freeze)}')
     
     if blocks_selection_mode != 'adaptive':
         model.setup_target_layers(blocks_to_freeze)
@@ -105,11 +118,11 @@ def train(
         clip_model=clip_model
     )
     
-    need_validation = all([
-        validate_every_n is not None,
-        val_set_path is not None,
-        val_set_path.exists()
-    ])
+    need_validation = (
+        validate_every_n is not None
+        and val_set_path is not None
+        and val_set_path.exists()
+    )
     
     if need_validation:
         z_val = torch.load(val_set_path, map_location=device)
@@ -147,7 +160,7 @@ def train(
         loss.backward()
         optimizer.step()
 
-        if verbose and (step % loging_every_n == 0 or step == 1):
+        if verbose and (step % logging_every_n == 0 or step == 1):
             message = format_log_message(
                 verbose, step, num_steps, num_steps_len, loss.item(),
                 blocks_selection_mode, blocks_to_freeze
@@ -162,7 +175,7 @@ def train(
             save_style_weights(
                 generator=model.G_target,
                 save_path=style_weights_dir / f'{experiment_name}_{step}.pt',
-                save_requires_grad_True_only=(blocks_selection_mode != 'adaptive'),
+                save_changed_only=should_save_changed_only,
                 verbose=0
             )
     
@@ -172,7 +185,7 @@ def train(
     save_style_weights(
         generator=model.G_target,
         save_path=style_weights_dir / f'{experiment_name}.pt',
-        save_requires_grad_True_only=(blocks_selection_mode != 'adaptive')
+        save_changed_only=should_save_changed_only
     )
 
 
@@ -206,7 +219,9 @@ def get_args() -> argparse.Namespace:
     # Logging, validation, checkpoints
     parser.add_argument('--weights_dir', type=str, default='weights')
     parser.add_argument('--output_dir', type=str, default='output/styles')
-    parser.add_argument('--loging_every_n', type=int, default=10)
+    parser.add_argument('--init_generator_weights_path', type=str, default=None)
+    parser.add_argument('--save_changed_only', action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument('--logging_every_n', type=int, default=10)
     parser.add_argument('--save_weights_every_n', type=int, default=50)
     parser.add_argument('--validate_every_n', type=int, default=50)
     parser.add_argument('--val_set_path', type=str, default='data/fixed_val_set.pt')
