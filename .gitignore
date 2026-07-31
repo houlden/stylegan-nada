@@ -17,6 +17,7 @@
 
 # weights_dir
 weights/
+pretrained_weights/
 
 # output_dir
 output/
