@@ -88,6 +88,7 @@
 │   ├── 📂 e4e                 # Ядро e4e энкодера от omertov
 │   └── 📂 stylegan2           # Ядро StyleGAN2-ADA-PyTorch от NVlabs
 ├── 📂 weights        # Веса используемых предобученных моделей
+├── 📄 LICENSE
 ├── 🔒 pixi.lock      # Lock-файл зависимостей
 └── 🤖 pixi.toml      # Конфигурационный файл зависимостей
 ```

@@ -1,0 +1,38 @@
+Multi-License Agreement
+
+This repository contains code from multiple sources, each governed by its own respective license. By using this software, you agree to comply with all terms and conditions of these individual licenses.
+
+1. Your Project Code & Modifications
+------------------------------------
+All original code and modifications introduced in this repository are licensed under the MIT License. (See the full text at the bottom of this file).
+
+2. Third-Party Dependencies (located in the 'third_party/' directory)
+--------------------------------------------------------------------
+- StyleGAN2 components are governed by the Nvidia Source Code License. 
+  This code is strictly for NON-COMMERCIAL research purposes only.
+- e4e and ArcFace components are governed by the MIT License.
+
+Please refer to the respective LICENSE files inside the 'third_party/' folder for the exact and complete terms of these licenses.
+
+==============================================================================
+FULL TEXT OF THE MIT LICENSE (For original code and modifications)
+==============================================================================
+Copyright (c) 2026 houlden
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
